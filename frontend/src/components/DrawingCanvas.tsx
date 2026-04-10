@@ -1,43 +1,42 @@
-import { createSignal, onMount, onCleanup, For } from "solid-js";
+import { createSignal, onCleanup, onMount } from "solid-js";
+import { DrawingToolbar } from "./DrawingToolbar";
 
 interface DrawingCanvasProps {
   onImageChange: (dataUrl: string) => void;
 }
 
-const COLORS = [
-  "#1a1a1a",
-  "#ffffff",
-  "#ef4444",
-  "#f97316",
-  "#eab308",
-  "#22c55e",
-  "#3b82f6",
-  "#8b5cf6",
-  "#ec4899",
-];
+/** Maps a client pointer position to canvas-local coordinates, accounting for CSS scaling. */
+function getCanvasPos(
+  canvas: HTMLCanvasElement,
+  clientX: number,
+  clientY: number,
+) {
+  const rect = canvas.getBoundingClientRect();
+  return {
+    x: (clientX - rect.left) * (canvas.width / rect.width),
+    y: (clientY - rect.top) * (canvas.height / rect.height),
+  };
+}
 
-export default function DrawingCanvas(props: DrawingCanvasProps) {
-  let canvasRef!: HTMLCanvasElement;
-  let containerRef!: HTMLDivElement;
-
+/**
+ * SolidJS reactive primitive that owns all drawing state and canvas operations.
+ * The component only has to wire up DOM events and size the canvas.
+ *
+ * @param getCanvas - getter for the canvas ref (resolved after mount)
+ * @param onImageChange - called with a new data URL after every paint operation
+ */
+function createDrawingState(
+  getCanvas: () => HTMLCanvasElement,
+  onImageChange: (dataUrl: string) => void,
+) {
   const [color, setColor] = createSignal("#1a1a1a");
   const [brushSize, setBrushSize] = createSignal(5);
   const [isDrawing, setIsDrawing] = createSignal(false);
-
   let lastX = 0;
   let lastY = 0;
 
-  const getCtx = () => canvasRef.getContext("2d")!;
-
-  const getPos = (clientX: number, clientY: number) => {
-    const rect = canvasRef.getBoundingClientRect();
-    const scaleX = canvasRef.width / rect.width;
-    const scaleY = canvasRef.height / rect.height;
-    return {
-      x: (clientX - rect.left) * scaleX,
-      y: (clientY - rect.top) * scaleY,
-    };
-  };
+  // biome-ignore lint/style/noNonNullAssertion: getContext('2d') only returns null without canvas support, which this component requires
+  const getCtx = () => getCanvas().getContext("2d")!;
 
   const startDrawing = (x: number, y: number) => {
     setIsDrawing(true);
@@ -58,33 +57,62 @@ export default function DrawingCanvas(props: DrawingCanvasProps) {
     ctx.stroke();
     lastX = x;
     lastY = y;
-    props.onImageChange(canvasRef.toDataURL("image/png"));
+    onImageChange(getCanvas().toDataURL("image/png"));
   };
 
   const stopDrawing = () => setIsDrawing(false);
 
   const clear = () => {
+    const canvas = getCanvas();
     const ctx = getCtx();
     ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0, 0, canvasRef.width, canvasRef.height);
-    props.onImageChange(canvasRef.toDataURL("image/png"));
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    onImageChange(canvas.toDataURL("image/png"));
   };
+
+  return {
+    color,
+    setColor,
+    brushSize,
+    setBrushSize,
+    startDrawing,
+    draw,
+    stopDrawing,
+    clear,
+  };
+}
+
+export function DrawingCanvas(props: DrawingCanvasProps) {
+  let canvasRef!: HTMLCanvasElement;
+  let containerRef!: HTMLDivElement;
+
+  const {
+    color,
+    setColor,
+    brushSize,
+    setBrushSize,
+    startDrawing,
+    draw,
+    stopDrawing,
+    clear,
+  } = createDrawingState(() => canvasRef, props.onImageChange);
 
   onMount(() => {
     const size = Math.min(containerRef.clientWidth, 480);
     canvasRef.width = size;
     canvasRef.height = size;
-    const ctx = getCtx();
+    // biome-ignore lint/style/noNonNullAssertion: see createDrawingState
+    const ctx = canvasRef.getContext("2d")!;
     ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0, 0, canvasRef.width, canvasRef.height);
+    ctx.fillRect(0, 0, size, size);
     props.onImageChange(canvasRef.toDataURL("image/png"));
 
     const onMouseDown = (e: MouseEvent) => {
-      const pos = getPos(e.clientX, e.clientY);
+      const pos = getCanvasPos(canvasRef, e.clientX, e.clientY);
       startDrawing(pos.x, pos.y);
     };
     const onMouseMove = (e: MouseEvent) => {
-      const pos = getPos(e.clientX, e.clientY);
+      const pos = getCanvasPos(canvasRef, e.clientX, e.clientY);
       draw(pos.x, pos.y);
     };
     const onMouseUp = () => stopDrawing();
@@ -92,13 +120,13 @@ export default function DrawingCanvas(props: DrawingCanvasProps) {
     const onTouchStart = (e: TouchEvent) => {
       e.preventDefault();
       const t = e.touches[0];
-      const pos = getPos(t.clientX, t.clientY);
+      const pos = getCanvasPos(canvasRef, t.clientX, t.clientY);
       startDrawing(pos.x, pos.y);
     };
     const onTouchMove = (e: TouchEvent) => {
       e.preventDefault();
       const t = e.touches[0];
-      const pos = getPos(t.clientX, t.clientY);
+      const pos = getCanvasPos(canvasRef, t.clientX, t.clientY);
       draw(pos.x, pos.y);
     };
     const onTouchEnd = () => stopDrawing();
@@ -124,36 +152,15 @@ export default function DrawingCanvas(props: DrawingCanvasProps) {
 
   return (
     <div class="drawing-tool">
-      <div class="drawing-toolbar">
-        <div class="color-palette">
-          <For each={COLORS}>
-            {(c) => (
-              <button
-                class="color-swatch"
-                classList={{ active: color() === c }}
-                style={{ background: c }}
-                onClick={() => setColor(c)}
-                title={c}
-              />
-            )}
-          </For>
-        </div>
-        <div class="brush-size-control">
-          <span>Size: {brushSize()}</span>
-          <input
-            type="range"
-            min="1"
-            max="24"
-            value={brushSize()}
-            onInput={(e) => setBrushSize(Number(e.currentTarget.value))}
-          />
-        </div>
-        <button class="btn-secondary" onClick={clear}>
-          🗑️ Clear
-        </button>
-      </div>
-      <div ref={containerRef!} class="canvas-container">
-        <canvas ref={canvasRef!} class="drawing-canvas" />
+      <DrawingToolbar
+        color={color()}
+        brushSize={brushSize()}
+        onColorChange={setColor}
+        onBrushSizeChange={setBrushSize}
+        onClear={clear}
+      />
+      <div ref={containerRef} class="canvas-container">
+        <canvas ref={canvasRef} class="drawing-canvas" />
       </div>
     </div>
   );
