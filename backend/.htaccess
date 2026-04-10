@@ -1,0 +1,40 @@
+# Apache configuration for the weekly-mood app
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # Pass through existing files (static JS/CSS/images from Vite build)
+    RewriteCond %{REQUEST_FILENAME} -f
+    RewriteRule ^ - [L]
+
+    # Pass through existing directories (e.g. /api/, /assets/)
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # All other requests (SPA routes like /display) → index.html
+    RewriteCond %{REQUEST_URI} !^/api/
+    RewriteRule ^ index.html [L]
+
+</IfModule>
+
+# Allow CORS headers for API responses
+
+<IfModule mod_headers.c>
+    <FilesMatch "\.php$">
+        Header always set Access-Control-Allow-Origin "*"
+        Header always set Access-Control-Allow-Methods "GET, POST, OPTIONS"
+        Header always set Access-Control-Allow-Headers "Content-Type"
+    </FilesMatch>
+</IfModule>
+
+# Security hardening
+
+Options -Indexes
+ServerSignature Off
+
+# Deny access to config file
+
+<Files "config.php">
+Require all denied
+</Files>

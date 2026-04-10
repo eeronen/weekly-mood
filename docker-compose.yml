@@ -1,0 +1,67 @@
+services:
+  # ── MySQL ────────────────────────────────────────────────────────────────
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: weekly_mood
+      MYSQL_USER: mood_user
+      MYSQL_PASSWORD: mood_pass
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-umood_user",
+          "-pmood_pass",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  # ── PHP + Apache backend ─────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_NAME: weekly_mood
+      DB_USER: mood_user
+      DB_PASS: mood_pass
+    ports:
+      - "8080:80"
+    volumes:
+      # Mount source for development hot-reload of PHP files
+      - ./backend:/var/www/html
+
+  # ── SolidJS frontend (Vite dev server) ───────────────────────────────────
+  frontend:
+    image: node:20-alpine
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+      - frontend_nm:/app/node_modules
+    ports:
+      - "3000:3000"
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    environment:
+      # Not used directly by Vite but handy for reference
+      API_URL: http://localhost:8080
+    depends_on:
+      - backend
+
+volumes:
+  mysql_data:
+  frontend_nm:

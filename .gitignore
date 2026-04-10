@@ -1,0 +1,13 @@
+# Node
+frontend/node_modules/
+
+# Vite build output (lands in backend/)
+backend/assets/
+backend/index.html
+
+# Docker volumes / local data
+.env
+
+# IDE
+.vscode/
+.idea/
