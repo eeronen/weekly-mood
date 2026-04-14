@@ -1,6 +1,10 @@
 # Node
 frontend/node_modules/
 
+# TypeScript compiled output in src/
+frontend/src/**/*.js
+frontend/src/**/*.jsx
+
 # Vite build output (lands in backend/)
 backend/assets/
 backend/index.html

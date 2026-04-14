@@ -84,6 +84,14 @@ export function App() {
                     <a href="/display" class="btn-link display-link">
                         View All →
                     </a>
+                    <a
+                        href="https://github.com/eeronen/weekly-mood/issues/new"
+                        class="btn-link display-link"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        🐛 Report Issue
+                    </a>
                 </div>
             </header>
 
