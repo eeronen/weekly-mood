@@ -1,8 +1,5 @@
-import type { ApiResponse, MoodEntry } from './types';
-
 const API_BASE = '/api';
-
-export async function submitMood(entry: MoodEntry): Promise<ApiResponse<never>> {
+export async function submitMood(entry) {
     const response = await fetch(`${API_BASE}/moods.php`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -13,8 +10,7 @@ export async function submitMood(entry: MoodEntry): Promise<ApiResponse<never>> 
     }
     return response.json();
 }
-
-export async function getMoods(date?: string): Promise<ApiResponse<MoodEntry[]>> {
+export async function getMoods(date) {
     const url = date
         ? `${API_BASE}/moods.php?date=${encodeURIComponent(date)}`
         : `${API_BASE}/moods.php`;
@@ -24,8 +20,7 @@ export async function getMoods(date?: string): Promise<ApiResponse<MoodEntry[]>>
     }
     return response.json();
 }
-
-export async function deleteMood(id: number, name: string): Promise<ApiResponse<never>> {
+export async function deleteMood(id, name) {
     const response = await fetch(`${API_BASE}/moods.php`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },

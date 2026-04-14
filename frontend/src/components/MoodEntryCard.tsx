@@ -4,6 +4,7 @@ import { MOOD_COLORS, MOOD_EMOJIS, MOOD_LABELS } from '../types';
 
 interface MoodEntryCardProps {
     entry: MoodEntry;
+    onDelete?: () => void;
 }
 
 export function MoodEntryCard(props: MoodEntryCardProps) {
@@ -13,7 +14,20 @@ export function MoodEntryCard(props: MoodEntryCardProps) {
         <div class="mood-entry-card" style={{ '--mood-color': MOOD_COLORS[level()] }}>
             <div class="card-header">
                 <span class="card-name">{props.entry.name}</span>
-                <span class="card-emoji">{MOOD_EMOJIS[level()]}</span>
+                <div class="card-header-right">
+                    <span class="card-emoji">{MOOD_EMOJIS[level()]}</span>
+                    <Show when={props.onDelete}>
+                        <button
+                            type="button"
+                            class="btn-delete-card"
+                            onClick={props.onDelete}
+                            title="Delete entry"
+                            aria-label="Delete entry"
+                        >
+                            🗑️
+                        </button>
+                    </Show>
+                </div>
             </div>
             <div class="card-mood">
                 <span class="card-mood-number">{props.entry.mood}</span>

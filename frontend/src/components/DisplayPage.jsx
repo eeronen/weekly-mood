@@ -1,54 +1,44 @@
 import { createResource, createSignal, For, Show } from 'solid-js';
 import { deleteMood, getMoods } from '../api';
-import type { MoodEntry, MoodLevel } from '../types';
 import { MOOD_COLORS, MOOD_EMOJIS, MOOD_LABELS } from '../types';
 import { MoodEntryCard } from './MoodEntryCard';
-
 export function DisplayPage() {
     const today = new Date().toISOString().split('T')[0];
     const [date, setDate] = createSignal(today);
     const [moods, { refetch }] = createResource(date, getMoods);
     const currentUserName = localStorage.getItem('sprintMoodName') ?? '';
-
     const entries = () => moods()?.data ?? [];
-
     const avgMood = () => {
         const data = entries();
-        if (data.length === 0) return null;
+        if (data.length === 0)
+            return null;
         const sum = data.reduce((acc, m) => acc + m.mood, 0);
         return (sum / data.length).toFixed(1);
     };
-
     const moodDistribution = () => {
-        const dist: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-        for (const m of entries()) dist[m.mood] = (dist[m.mood] ?? 0) + 1;
+        const dist = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+        for (const m of entries())
+            dist[m.mood] = (dist[m.mood] ?? 0) + 1;
         return dist;
     };
-
-    const handleDelete = async (entry: MoodEntry) => {
-        if (entry.id === undefined || entry.id === null) return;
+    const handleDelete = async (entry) => {
+        if (entry.id === undefined || entry.id === null)
+            return;
         try {
             const result = await deleteMood(entry.id, entry.name);
             if (result.success) {
                 refetch();
             }
-        } catch {
+        }
+        catch {
             // silently ignore network errors; the list will stay unchanged
         }
     };
-
-    return (
-        <div class="display-page">
+    return (<div class="display-page">
             <div class="display-header">
                 <h1>🎯 Sprint Review Moods</h1>
                 <div class="display-controls">
-                    <input
-                        type="date"
-                        class="date-input"
-                        value={date()}
-                        onInput={(e) => setDate(e.currentTarget.value)}
-                        max={today}
-                    />
+                    <input type="date" class="date-input" value={date()} onInput={(e) => setDate(e.currentTarget.value)} max={today}/>
                     <button type="button" class="btn-secondary" onClick={() => refetch()}>
                         🔄 Refresh
                     </button>
@@ -84,42 +74,26 @@ export function DisplayPage() {
                             <span class="stat-number">{avgMood()}</span>
                             <span class="stat-label">Avg. Mood</span>
                         </div>
-                        <For each={[1, 2, 3, 4, 5] as MoodLevel[]}>
-                            {(level) => (
-                                <Show when={moodDistribution()[level] > 0}>
-                                    <div
-                                        class="summary-stat"
-                                        style={{ '--mood-color': MOOD_COLORS[level] }}
-                                    >
-                                        <span
-                                            class="stat-number"
-                                            style={{ color: MOOD_COLORS[level] }}
-                                        >
+                        <For each={[1, 2, 3, 4, 5]}>
+                            {(level) => (<Show when={moodDistribution()[level] > 0}>
+                                    <div class="summary-stat" style={{ '--mood-color': MOOD_COLORS[level] }}>
+                                        <span class="stat-number" style={{ color: MOOD_COLORS[level] }}>
                                             {MOOD_EMOJIS[level]} {moodDistribution()[level]}
                                         </span>
                                         <span class="stat-label">{MOOD_LABELS[level]}</span>
                                     </div>
-                                </Show>
-                            )}
+                                </Show>)}
                         </For>
                     </div>
 
                     <div class="mood-grid-display">
                         <For each={entries()}>
-                            {(entry: MoodEntry) => (
-                                <MoodEntryCard
-                                    entry={entry}
-                                    onDelete={
-                                        currentUserName && entry.name === currentUserName
-                                            ? () => handleDelete(entry)
-                                            : undefined
-                                    }
-                                />
-                            )}
+                            {(entry) => (<MoodEntryCard entry={entry} onDelete={currentUserName && entry.name === currentUserName
+                ? () => handleDelete(entry)
+                : undefined}/>)}
                         </For>
                     </div>
                 </Show>
             </Show>
-        </div>
-    );
+        </div>);
 }

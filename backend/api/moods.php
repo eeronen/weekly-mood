@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+header('Access-Control-Allow-Methods: GET, POST, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -145,6 +145,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo json_encode(['success' => true, 'id' => $id], JSON_UNESCAPED_UNICODE);
     } catch (PDOException $e) {
         error_log('[weekly-mood] DB error on POST: ' . $e->getMessage());
+        jsonError(500, 'Database error. Please try again later.');
+    }
+
+    exit;
+}
+
+// ── DELETE: remove a mood entry (ownership verified by name) ────────────────
+
+if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
+    $raw  = file_get_contents('php://input');
+    $body = json_decode((string) $raw, true);
+
+    if (!is_array($body)) {
+        jsonError(400, 'Invalid JSON body.');
+    }
+
+    $id   = isset($body['id'])   ? (int) $body['id']              : 0;
+    $name = isset($body['name']) ? trim((string) $body['name'])   : '';
+
+    if ($id <= 0) {
+        jsonError(400, 'Invalid id.');
+    }
+    if ($name === '') {
+        jsonError(400, 'Name is required.');
+    }
+
+    try {
+        $db   = getDB();
+        $stmt = $db->prepare('DELETE FROM moods WHERE id = ? AND name = ?');
+        $stmt->execute([$id, $name]);
+
+        if ($stmt->rowCount() === 0) {
+            jsonError(404, 'Mood entry not found or does not belong to you.');
+        }
+
+        echo json_encode(['success' => true], JSON_UNESCAPED_UNICODE);
+    } catch (PDOException $e) {
+        error_log('[weekly-mood] DB error on DELETE: ' . $e->getMessage());
         jsonError(500, 'Database error. Please try again later.');
     }
 
