@@ -24,3 +24,15 @@ export async function getMoods(date?: string): Promise<ApiResponse<MoodEntry[]>>
     }
     return response.json();
 }
+
+export async function deleteMood(id: number, name: string): Promise<ApiResponse<never>> {
+    const response = await fetch(`${API_BASE}/moods.php`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, name }),
+    });
+    if (!response.ok && response.status !== 404) {
+        throw new Error(`HTTP error: ${response.status}`);
+    }
+    return response.json();
+}

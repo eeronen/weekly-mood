@@ -9,6 +9,10 @@ frontend/src/**/*.jsx
 backend/assets/
 backend/index.html
 
+# TypeScript compiled output alongside sources
+frontend/src/**/*.js
+frontend/src/**/*.jsx
+
 # Docker volumes / local data
 .env
 
