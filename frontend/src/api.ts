@@ -1,4 +1,4 @@
-import type { ApiResponse, MoodEntry } from './types';
+import type { ApiResponse, MoodEntry, Reaction } from './types';
 
 const API_BASE = '/api';
 
@@ -32,6 +32,38 @@ export async function deleteMood(id: number, name: string): Promise<ApiResponse<
         body: JSON.stringify({ id, name }),
     });
     if (!response.ok && response.status !== 404) {
+        throw new Error(`HTTP error: ${response.status}`);
+    }
+    return response.json();
+}
+
+export async function getReactions(moodId: number): Promise<ApiResponse<Reaction[]>> {
+    const response = await fetch(`${API_BASE}/reactions.php?mood_id=${moodId}`);
+    if (!response.ok) {
+        throw new Error(`HTTP error: ${response.status}`);
+    }
+    return response.json();
+}
+
+export async function addReaction(moodId: number, emoji: string, userName: string): Promise<ApiResponse<never>> {
+    const response = await fetch(`${API_BASE}/reactions.php`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mood_id: moodId, emoji, user_name: userName }),
+    });
+    if (!response.ok) {
+        throw new Error(`HTTP error: ${response.status}`);
+    }
+    return response.json();
+}
+
+export async function removeReaction(moodId: number, emoji: string, userName: string): Promise<ApiResponse<never>> {
+    const response = await fetch(`${API_BASE}/reactions.php`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mood_id: moodId, emoji, user_name: userName }),
+    });
+    if (!response.ok) {
         throw new Error(`HTTP error: ${response.status}`);
     }
     return response.json();

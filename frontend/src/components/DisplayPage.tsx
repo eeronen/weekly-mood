@@ -2,7 +2,7 @@ import { createResource, createSignal, For, Show } from 'solid-js';
 import { deleteMood, getMoods } from '../api';
 import type { MoodEntry, MoodLevel } from '../types';
 import { MOOD_COLORS, MOOD_EMOJIS, MOOD_LABELS } from '../types';
-import { MoodEntryCard } from './MoodEntryCard';
+import { MoodEntryCard } from './MoodEntryCardBasic';
 
 export function DisplayPage() {
     const today = new Date().toISOString().split('T')[0];

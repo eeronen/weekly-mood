@@ -18,3 +18,16 @@ CREATE TABLE IF NOT EXISTS moods (
 ) ENGINE=InnoDB
   DEFAULT CHARSET=utf8mb4
   COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS reactions (
+    id          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    mood_id     INT UNSIGNED          NOT NULL,
+    emoji       VARCHAR(10)           NOT NULL,
+    user_name   VARCHAR(100)          NOT NULL,
+    created_at  TIMESTAMP             NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (mood_id) REFERENCES moods(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_user_emoji_per_mood (mood_id, emoji, user_name),
+    INDEX idx_mood_id (mood_id)
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci;

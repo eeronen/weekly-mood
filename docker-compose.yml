@@ -1,26 +1,23 @@
 services:
-  # ── MySQL ────────────────────────────────────────────────────────────────
+  # ── MariaDB ────────────────────────────────────────────────────────────────
   db:
-    image: mysql:8.0
+    image: mariadb:11
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: weekly_mood
-      MYSQL_USER: mood_user
-      MYSQL_PASSWORD: mood_pass
+      MARIADB_ROOT_PASSWORD: rootpassword
+      MARIADB_DATABASE: weekly_mood
+      MARIADB_USER: mood_user
+      MARIADB_PASSWORD: mood_pass
     volumes:
-      - mysql_data:/var/lib/mysql
+      - mariadb_data:/var/lib/mysql
       - ./db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
     healthcheck:
       test:
         [
           "CMD",
-          "mysqladmin",
-          "ping",
-          "-h",
-          "localhost",
-          "-umood_user",
-          "-pmood_pass",
+          "healthcheck.sh",
+          "--connect",
+          "--innodb_initialized",
         ]
       interval: 5s
       timeout: 5s
@@ -63,5 +60,5 @@ services:
       - backend
 
 volumes:
-  mysql_data:
+  mariadb_data:
   frontend_nm:

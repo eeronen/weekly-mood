@@ -33,6 +33,12 @@ export interface MoodEntry {
     created_at?: string;
 }
 
+export interface Reaction {
+    emoji: string;
+    count: number;
+    users: string;
+}
+
 export interface ApiResponse<T = unknown> {
     success: boolean;
     data?: T;
