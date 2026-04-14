@@ -37,7 +37,7 @@ function validateImageData(?string $imageData): bool
         return false;
     }
     // Limit encoded size to 2 MB to prevent DB flooding
-    if (mb_strlen($imageData, '8bit') > 2_097_152) {
+    if (mb_strlen($imageData, '8bit') > 2097152) {
         return false;
     }
     return true;
@@ -83,7 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Enforce a 3 MB request body limit (image is max ~2 MB encoded + JSON overhead)
     $contentLength = (int) ($_SERVER['CONTENT_LENGTH'] ?? 0);
-    if ($contentLength > 3_145_728) {
+    if ($contentLength > 3145728) {
         jsonError(413, 'Request body too large (max 3 MB).');
     }
 

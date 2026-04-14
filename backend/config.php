@@ -1,10 +1,19 @@
 <?php
 declare(strict_types=1);
 
-$dbHost = $_ENV['DB_HOST'] ?? getenv('DB_HOST') ?: 'db';
-$dbName = $_ENV['DB_NAME'] ?? getenv('DB_NAME') ?: 'weekly_mood';
-$dbUser = $_ENV['DB_USER'] ?? getenv('DB_USER') ?: 'mood_user';
-$dbPass = $_ENV['DB_PASS'] ?? getenv('DB_PASS') ?: 'mood_pass';
+$envFile = __DIR__ . './.env';
+if (file_exists($envFile)) {
+    foreach (file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
+        if (str_starts_with(trim($line), '#')) continue;
+        [$key, $value] = explode('=', $line, 2);
+        $_ENV[trim($key)] = trim($value);
+    }
+}
+
+$dbHost = $_ENV['DB_HOST'] ?? 'db';
+$dbName = $_ENV['DB_NAME'] ?? 'weekly_mood';
+$dbUser = $_ENV['DB_USER'] ?? 'mood_user';
+$dbPass = $_ENV['DB_PASS'] ?? 'mood_pass';
 
 function getDB(): PDO
 {
