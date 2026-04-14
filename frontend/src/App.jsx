@@ -4,38 +4,30 @@ import { ImageInput } from './components/ImageInput';
 import { MoodSelector } from './components/MoodSelector';
 import { NameStep } from './components/NameStep';
 import { SuccessScreen } from './components/SuccessScreen';
-import type { MoodLevel } from './types';
-
-type Step = 'name' | 'mood' | 'image' | 'success';
-
 export function App() {
     const savedName = localStorage.getItem('sprintMoodName') ?? '';
-    const [step, setStep] = createSignal<Step>(savedName ? 'mood' : 'name');
+    const [step, setStep] = createSignal(savedName ? 'mood' : 'name');
     const [name, setName] = createSignal(savedName);
-    const [mood, setMood] = createSignal<MoodLevel | null>(null);
-    const [imageData, setImageData] = createSignal<string | null>(null);
+    const [mood, setMood] = createSignal(null);
+    const [imageData, setImageData] = createSignal(null);
     const [submitting, setSubmitting] = createSignal(false);
-    const [error, setError] = createSignal<string | null>(null);
-
-    const handleNameConfirm = (newName: string) => {
+    const [error, setError] = createSignal(null);
+    const handleNameConfirm = (newName) => {
         localStorage.setItem('sprintMoodName', newName);
         setName(newName);
         setStep('mood');
     };
-
-    const handleMoodSelect = (selectedMood: MoodLevel) => {
+    const handleMoodSelect = (selectedMood) => {
         setMood(selectedMood);
         setStep('image');
     };
-
-    const handleImageDone = async (data: string | null, type: 'drawing' | 'upload' | null) => {
+    const handleImageDone = async (data, type) => {
         const currentMood = mood();
         if (!currentMood) {
             return;
         }
         setSubmitting(true);
         setError(null);
-
         try {
             const result = await submitMood({
                 name: name(),
@@ -43,29 +35,28 @@ export function App() {
                 image_data: data,
                 image_type: type,
             });
-
             if (result.success) {
                 setImageData(data);
                 setStep('success');
-            } else {
+            }
+            else {
                 setError(result.error ?? 'Submission failed. Please try again.');
             }
-        } catch {
+        }
+        catch {
             setError('Failed to connect to server. Is the backend running?');
-        } finally {
+        }
+        finally {
             setSubmitting(false);
         }
     };
-
     const handleRestart = () => {
         setMood(null);
         setImageData(null);
         setError(null);
         setStep('mood');
     };
-
-    return (
-        <div class="app-container">
+    return (<div class="app-container">
             <header class="app-header">
                 <a href="/" class="app-title">
                     <span class="app-logo">🎯</span>
@@ -84,12 +75,7 @@ export function App() {
                     <a href="/display" class="btn-link display-link">
                         View All →
                     </a>
-                    <a
-                        href="https://github.com/eeronen/weekly-mood/issues/new"
-                        class="btn-link display-link"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                    >
+                    <a href="https://github.com/eeronen/weekly-mood/issues/new" class="btn-link display-link" target="_blank" rel="noopener noreferrer">
                         🐛 Report Issue
                     </a>
                 </div>
@@ -99,34 +85,21 @@ export function App() {
                 <div class="step-wrapper">
                     <Switch>
                         <Match when={step() === 'name'}>
-                            <NameStep currentName={name()} onConfirm={handleNameConfirm} />
+                            <NameStep currentName={name()} onConfirm={handleNameConfirm}/>
                         </Match>
                         <Match when={step() === 'mood'}>
-                            <MoodSelector onSelect={handleMoodSelect} />
+                            <MoodSelector onSelect={handleMoodSelect}/>
                         </Match>
                         <Match when={step() === 'image'}>
-                            <ImageInput
-                                onDone={handleImageDone}
-                                submitting={submitting()}
-                                error={error()}
-                                onBack={() => setStep('mood')}
-                            />
+                            <ImageInput onDone={handleImageDone} submitting={submitting()} error={error()} onBack={() => setStep('mood')}/>
                         </Match>
                         <Match when={step() === 'success'}>
                             <Show when={mood()}>
-                                {(currentMood) => (
-                                    <SuccessScreen
-                                        name={name()}
-                                        mood={currentMood()}
-                                        imageData={imageData()}
-                                        onNext={handleRestart}
-                                    />
-                                )}
+                                {(currentMood) => (<SuccessScreen name={name()} mood={currentMood()} imageData={imageData()} onNext={handleRestart}/>)}
                             </Show>
                         </Match>
                     </Switch>
                 </div>
             </main>
-        </div>
-    );
+        </div>);
 }
