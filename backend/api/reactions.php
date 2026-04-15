@@ -20,33 +20,7 @@ function jsonError(int $status, string $message): never
     exit;
 }
 
-// GET: Get reactions for a mood entry
-if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    $moodId = (int) ($_GET['mood_id'] ?? 0);
-    
-    if ($moodId <= 0) {
-        jsonError(400, 'Invalid mood_id.');
-    }
-
-    try {
-        $db = getDB();
-        $stmt = $db->prepare('
-            SELECT emoji, COUNT(*) as count, GROUP_CONCAT(user_name) as users
-            FROM reactions 
-            WHERE mood_id = ? 
-            GROUP BY emoji
-            ORDER BY count DESC, emoji ASC
-        ');
-        $stmt->execute([$moodId]);
-        $reactions = $stmt->fetchAll();
-
-        echo json_encode(['success' => true, 'data' => $reactions], JSON_UNESCAPED_UNICODE);
-    } catch (PDOException $e) {
-        error_log('[weekly-mood] DB error on GET reactions: ' . $e->getMessage());
-        jsonError(500, 'Database error. Please try again later.');
-    }
-    exit;
-}
+// GET is no longer needed — reactions are included in the moods endpoint
 
 // POST: Add a reaction
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {

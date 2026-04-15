@@ -1,10 +1,12 @@
-import { createResource, createSignal, For, onCleanup, onMount, Show } from "solid-js";
+import { createSignal, For, onCleanup, onMount, Show } from "solid-js";
 import type { MoodEntry, MoodLevel, Reaction } from "../types";
 import { MOOD_COLORS, MOOD_EMOJIS, MOOD_LABELS } from "../types";
-import { addReaction, getReactions, removeReaction } from "../api";
+import { addReaction, removeReaction } from "../api";
 
 interface MoodEntryCardProps {
   entry: MoodEntry;
+  reactions: Reaction[];
+  onReactionsChange?: () => void;
   onClick?: () => void;
   onDelete?: () => void;
 }
@@ -14,13 +16,9 @@ const REACTION_EMOJIS = ["👍", "❤️", "😂", "😮", "😢", "🔥", "💯
 export function MoodEntryCard(props: MoodEntryCardProps) {
   const level = () => props.entry.mood as MoodLevel;
   const [showReactionPicker, setShowReactionPicker] = createSignal(false);
-  const [reactions, { refetch }] = createResource(
-    () => props.entry.id,
-    (id) => (id ? getReactions(id) : null),
-  );
   const currentUserName = localStorage.getItem("sprintMoodName") ?? "";
 
-  const reactionData = () => reactions()?.data ?? [];
+  const reactionData = () => props.reactions;
 
   const handleReaction = async (emoji: string) => {
     if (!props.entry.id || !currentUserName) return;
@@ -35,7 +33,7 @@ export function MoodEntryCard(props: MoodEntryCardProps) {
       } else {
         await addReaction(props.entry.id, emoji, currentUserName);
       }
-      await refetch();
+      props.onReactionsChange?.();
     } catch {
       // silently ignore errors
     }

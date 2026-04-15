@@ -4,6 +4,7 @@ import type { MoodEntry, MoodLevel } from '../types';
 import { MOOD_COLORS, MOOD_EMOJIS, MOOD_LABELS } from '../types';
 import { MoodEntryCard } from './MoodEntryCardBasic';
 import { UserProfileModal } from './UserProfileModal';
+import { createPolling } from '../usePolling';
 
 export function DisplayPage() {
     const today = new Date().toISOString().split('T')[0];
@@ -11,6 +12,16 @@ export function DisplayPage() {
     const [moods, { refetch }] = createResource(date, getMoods);
     const currentUserName = localStorage.getItem('sprintMoodName') ?? '';
     const [selectedEntry, setSelectedEntry] = createSignal<MoodEntry | null>(null);
+
+    let lastSnapshot = '';
+    createPolling(async () => {
+        const result = await getMoods(date());
+        const snapshot = JSON.stringify(result.data);
+        const changed = snapshot !== lastSnapshot;
+        lastSnapshot = snapshot;
+        if (changed) refetch();
+        return changed;
+    });
 
     const entries = () => moods()?.data ?? [];
 
@@ -111,6 +122,8 @@ export function DisplayPage() {
                             {(entry: MoodEntry) => (
                                 <MoodEntryCard
                                     entry={entry}
+                                    reactions={entry.reactions ?? []}
+                                    onReactionsChange={() => refetch()}
                                     onClick={() => setSelectedEntry(entry)}
                                     onDelete={
                                         currentUserName && entry.name === currentUserName

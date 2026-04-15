@@ -31,6 +31,7 @@ export interface MoodEntry {
     image_data?: string | null;
     image_type?: 'drawing' | 'upload' | null;
     created_at?: string;
+    reactions?: Reaction[];
 }
 
 export interface Reaction {

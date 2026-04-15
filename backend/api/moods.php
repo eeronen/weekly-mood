@@ -95,6 +95,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $stmt->execute([$date]);
         $rows = $stmt->fetchAll();
 
+        // Fetch reactions for all moods in one query
+        $moodIds = array_column($rows, 'id');
+        $reactionsByMood = [];
+        if (count($moodIds) > 0) {
+            $placeholders = implode(',', array_fill(0, count($moodIds), '?'));
+            $rStmt = $db->prepare("
+                SELECT mood_id, emoji, COUNT(*) as count, GROUP_CONCAT(user_name) as users
+                FROM reactions
+                WHERE mood_id IN ($placeholders)
+                GROUP BY mood_id, emoji
+                ORDER BY count DESC, emoji ASC
+            ");
+            $rStmt->execute($moodIds);
+            foreach ($rStmt->fetchAll() as $r) {
+                $reactionsByMood[(int) $r['mood_id']][] = [
+                    'emoji' => $r['emoji'],
+                    'count' => $r['count'],
+                    'users' => $r['users'],
+                ];
+            }
+        }
+
+        foreach ($rows as &$row) {
+            $row['reactions'] = $reactionsByMood[(int) $row['id']] ?? [];
+        }
+        unset($row);
+
         echo json_encode(['success' => true, 'data' => $rows], JSON_UNESCAPED_UNICODE);
     } catch (PDOException $e) {
         error_log('[weekly-mood] DB error on GET: ' . $e->getMessage());

@@ -45,13 +45,6 @@ export async function deleteMood(id: number, name: string): Promise<ApiResponse<
     return response.json();
 }
 
-export async function getReactions(moodId: number): Promise<ApiResponse<Reaction[]>> {
-    const response = await fetch(`${API_BASE}/reactions.php?mood_id=${moodId}`);
-    if (!response.ok) {
-        throw new Error(`HTTP error: ${response.status}`);
-    }
-    return response.json();
-}
 
 export async function addReaction(moodId: number, emoji: string, userName: string): Promise<ApiResponse<never>> {
     const response = await fetch(`${API_BASE}/reactions.php`, {
