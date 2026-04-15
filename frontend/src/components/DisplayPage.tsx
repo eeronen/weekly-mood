@@ -3,12 +3,14 @@ import { deleteMood, getMoods } from '../api';
 import type { MoodEntry, MoodLevel } from '../types';
 import { MOOD_COLORS, MOOD_EMOJIS, MOOD_LABELS } from '../types';
 import { MoodEntryCard } from './MoodEntryCardBasic';
+import { UserProfileModal } from './UserProfileModal';
 
 export function DisplayPage() {
     const today = new Date().toISOString().split('T')[0];
     const [date, setDate] = createSignal(today);
     const [moods, { refetch }] = createResource(date, getMoods);
     const currentUserName = localStorage.getItem('sprintMoodName') ?? '';
+    const [selectedEntry, setSelectedEntry] = createSignal<MoodEntry | null>(null);
 
     const entries = () => moods()?.data ?? [];
 
@@ -109,6 +111,7 @@ export function DisplayPage() {
                             {(entry: MoodEntry) => (
                                 <MoodEntryCard
                                     entry={entry}
+                                    onClick={() => setSelectedEntry(entry)}
                                     onDelete={
                                         currentUserName && entry.name === currentUserName
                                             ? () => handleDelete(entry)
@@ -119,6 +122,12 @@ export function DisplayPage() {
                         </For>
                     </div>
                 </Show>
+            </Show>
+
+            <Show when={selectedEntry()}>
+                {(entry) => (
+                    <UserProfileModal entry={entry()} onClose={() => setSelectedEntry(null)} />
+                )}
             </Show>
         </div>
     );

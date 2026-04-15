@@ -25,6 +25,14 @@ export async function getMoods(date?: string): Promise<ApiResponse<MoodEntry[]>>
     return response.json();
 }
 
+export async function getMoodsByUser(name: string): Promise<ApiResponse<MoodEntry[]>> {
+    const response = await fetch(`${API_BASE}/moods.php?name=${encodeURIComponent(name)}`);
+    if (!response.ok) {
+        throw new Error(`HTTP error: ${response.status}`);
+    }
+    return response.json();
+}
+
 export async function deleteMood(id: number, name: string): Promise<ApiResponse<never>> {
     const response = await fetch(`${API_BASE}/moods.php`, {
         method: 'DELETE',

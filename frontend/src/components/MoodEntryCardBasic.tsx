@@ -5,6 +5,7 @@ import { addReaction, getReactions, removeReaction } from "../api";
 
 interface MoodEntryCardProps {
   entry: MoodEntry;
+  onClick?: () => void;
   onDelete?: () => void;
 }
 
@@ -45,6 +46,10 @@ export function MoodEntryCard(props: MoodEntryCardProps) {
     <div
       class="mood-entry-card"
       style={{ "--mood-color": MOOD_COLORS[level()] }}
+      onClick={(e) => {
+        if ((e.target as HTMLElement).closest("button")) return;
+        props.onClick?.();
+      }}
     >
       <div class="card-header">
         <span class="card-name">{props.entry.name}</span>

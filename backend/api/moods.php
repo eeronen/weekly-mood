@@ -43,9 +43,35 @@ function validateImageData(?string $imageData): bool
     return true;
 }
 
-// ── GET: retrieve moods for a date ──────────────────────────────────────────
+// ── GET: retrieve moods for a date, or by user name ─────────────────────────
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    $name = isset($_GET['name']) ? trim($_GET['name']) : '';
+
+    // If name is provided, return all moods for that user
+    if ($name !== '') {
+        if (mb_strlen($name) > 100) {
+            jsonError(400, 'Invalid name.');
+        }
+        try {
+            $db   = getDB();
+            $stmt = $db->prepare(
+                'SELECT id, name, mood, image_data, image_type, created_at
+                   FROM moods
+                  WHERE name = ?
+                  ORDER BY created_at DESC
+                  LIMIT 50'
+            );
+            $stmt->execute([$name]);
+            $rows = $stmt->fetchAll();
+            echo json_encode(['success' => true, 'data' => $rows], JSON_UNESCAPED_UNICODE);
+        } catch (PDOException $e) {
+            error_log('[weekly-mood] DB error on GET by name: ' . $e->getMessage());
+            jsonError(500, 'Database error. Please try again later.');
+        }
+        exit;
+    }
+
     $date = $_GET['date'] ?? date('Y-m-d');
 
     // Strict date format check
