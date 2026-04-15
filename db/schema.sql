@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS moods (
 CREATE TABLE IF NOT EXISTS reactions (
     id          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     mood_id     INT UNSIGNED          NOT NULL,
-    emoji       VARCHAR(10)           NOT NULL,
+    emoji       VARCHAR(10)           NOT NULL COLLATE utf8mb4_bin,
     user_name   VARCHAR(100)          NOT NULL,
     created_at  TIMESTAMP             NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (mood_id) REFERENCES moods(id) ON DELETE CASCADE,

@@ -1,4 +1,4 @@
-import { createResource, createSignal, For, Show } from "solid-js";
+import { createResource, createSignal, For, onCleanup, onMount, Show } from "solid-js";
 import type { MoodEntry, MoodLevel, Reaction } from "../types";
 import { MOOD_COLORS, MOOD_EMOJIS, MOOD_LABELS } from "../types";
 import { addReaction, getReactions, removeReaction } from "../api";
@@ -25,29 +25,41 @@ export function MoodEntryCard(props: MoodEntryCardProps) {
   const handleReaction = async (emoji: string) => {
     if (!props.entry.id || !currentUserName) return;
 
-    const existingReaction = reactionData().find(
+    const existing = reactionData().find(
       (r) => r.emoji === emoji && r.users.split(",").includes(currentUserName),
     );
 
     try {
-      if (existingReaction) {
+      if (existing) {
         await removeReaction(props.entry.id, emoji, currentUserName);
       } else {
         await addReaction(props.entry.id, emoji, currentUserName);
       }
-      refetch();
+      await refetch();
     } catch {
       // silently ignore errors
     }
     setShowReactionPicker(false);
   };
 
+  let cardRef: HTMLDivElement | undefined;
+
+  const handleClickOutside = (e: MouseEvent) => {
+    if (showReactionPicker() && cardRef && !cardRef.contains(e.target as Node)) {
+      setShowReactionPicker(false);
+    }
+  };
+
+  onMount(() => document.addEventListener("click", handleClickOutside));
+  onCleanup(() => document.removeEventListener("click", handleClickOutside));
+
   return (
     <div
+      ref={cardRef}
       class="mood-entry-card"
       style={{ "--mood-color": MOOD_COLORS[level()] }}
       onClick={(e) => {
-        if ((e.target as HTMLElement).closest("button")) return;
+        if ((e.target as HTMLElement).closest(".card-reactions, .btn-delete-card")) return;
         props.onClick?.();
       }}
     >
