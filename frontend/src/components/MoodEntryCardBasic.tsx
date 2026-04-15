@@ -9,6 +9,7 @@ interface MoodEntryCardProps {
   onReactionsChange?: () => void;
   onClick?: () => void;
   onDelete?: () => void;
+  onEdit?: () => void;
 }
 
 const REACTION_EMOJIS = ["👍", "❤️", "😂", "😮", "😢", "🔥", "💯"];
@@ -65,6 +66,17 @@ export function MoodEntryCard(props: MoodEntryCardProps) {
         <span class="card-name">{props.entry.name}</span>
         <div class="card-header-right">
           <span class="card-emoji">{MOOD_EMOJIS[level()]}</span>
+          <Show when={props.onEdit}>
+            <button
+              type="button"
+              class="btn-delete-card"
+              onClick={(e) => { e.stopPropagation(); props.onEdit?.(); }}
+              title="Edit entry"
+              aria-label="Edit entry"
+            >
+              ✏️
+            </button>
+          </Show>
           <Show when={props.onDelete}>
             <button
               type="button"

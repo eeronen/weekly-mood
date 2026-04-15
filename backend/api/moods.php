@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, DELETE, OPTIONS');
+header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -188,6 +188,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     try {
         $db   = getDB();
+
+        // Prevent duplicate entry for the same user on the same day
+        $dupStmt = $db->prepare(
+            'SELECT id FROM moods WHERE name = ? AND DATE(created_at) = CURDATE() LIMIT 1'
+        );
+        $dupStmt->execute([$name]);
+        if ($dupStmt->fetch()) {
+            jsonError(409, 'You have already submitted a mood entry for today.');
+        }
+
         $stmt = $db->prepare(
             'INSERT INTO moods (name, mood, image_data, image_type) VALUES (?, ?, ?, ?)'
         );
@@ -198,6 +208,72 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo json_encode(['success' => true, 'id' => $id], JSON_UNESCAPED_UNICODE);
     } catch (PDOException $e) {
         error_log('[weekly-mood] DB error on POST: ' . $e->getMessage());
+        jsonError(500, 'Database error. Please try again later.');
+    }
+
+    exit;
+}
+
+// ── PUT: update an existing mood entry ─────────────────────────────────────
+
+if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
+    $contentLength = (int) ($_SERVER['CONTENT_LENGTH'] ?? 0);
+    if ($contentLength > 13631488) {
+        jsonError(413, 'Request body too large (max 13 MB).');
+    }
+
+    $raw  = file_get_contents('php://input');
+    $body = json_decode((string) $raw, true);
+
+    if (!is_array($body)) {
+        jsonError(400, 'Invalid JSON body.');
+    }
+
+    $id        = isset($body['id'])         ? (int) $body['id']              : 0;
+    $name      = isset($body['name'])       ? trim((string) $body['name'])   : '';
+    $mood      = isset($body['mood'])       ? (int) $body['mood']            : 0;
+    $imageData = isset($body['image_data']) ? (string) $body['image_data']   : null;
+    $imageType = isset($body['image_type']) ? (string) $body['image_type']   : null;
+
+    if ($imageData === '') { $imageData = null; }
+    if ($imageType === '') { $imageType = null; }
+
+    if ($id <= 0) {
+        jsonError(400, 'Invalid id.');
+    }
+    if ($name === '' || mb_strlen($name) > 100) {
+        jsonError(400, 'Name must be between 1 and 100 characters.');
+    }
+    if ($mood < 1 || $mood > 5) {
+        jsonError(400, 'Mood must be an integer between 1 and 5.');
+    }
+    if ($imageType !== null && !in_array($imageType, ['drawing', 'upload'], true)) {
+        jsonError(400, 'image_type must be "drawing" or "upload".');
+    }
+    if ($imageData !== null && $imageType === null) {
+        jsonError(400, 'image_type is required when image_data is provided.');
+    }
+    if ($imageType !== null && $imageData === null) {
+        $imageType = null;
+    }
+    if (!validateImageData($imageData)) {
+        jsonError(400, 'Invalid image_data. Must be a PNG/JPEG/GIF/WebP data URI under 11 MB.');
+    }
+
+    try {
+        $db   = getDB();
+        $stmt = $db->prepare(
+            'UPDATE moods SET mood = ?, image_data = ?, image_type = ? WHERE id = ? AND name = ?'
+        );
+        $stmt->execute([$mood, $imageData, $imageType, $id, $name]);
+
+        if ($stmt->rowCount() === 0) {
+            jsonError(404, 'Mood entry not found or does not belong to you.');
+        }
+
+        echo json_encode(['success' => true], JSON_UNESCAPED_UNICODE);
+    } catch (PDOException $e) {
+        error_log('[weekly-mood] DB error on PUT: ' . $e->getMessage());
         jsonError(500, 'Database error. Please try again later.');
     }
 

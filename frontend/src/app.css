@@ -334,6 +334,15 @@ a.display-link:hover {
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
 }
 
+.mood-card--selected {
+  border-color: var(--mood-color);
+  box-shadow: 0 0 0 3px var(--mood-color);
+}
+
+.mood-card--selected::before {
+  opacity: 0.1;
+}
+
 .mood-card:hover::before {
   opacity: 0.08;
 }
@@ -1019,8 +1028,12 @@ a.display-link:hover {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .modal-content {
@@ -1050,7 +1063,9 @@ a.display-link:hover {
   color: var(--color-text-muted);
   padding: 4px 8px;
   border-radius: var(--radius-sm);
-  transition: background var(--transition), color var(--transition);
+  transition:
+    background var(--transition),
+    color var(--transition);
 }
 
 .modal-close:hover {

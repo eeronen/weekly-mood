@@ -65,8 +65,12 @@ export function DisplayPage() {
                     <button type="button" class="btn-secondary" onClick={() => refetch()}>
                         🔄 Refresh
                     </button>
-                    <a href="/" class="btn-secondary" style={{ 'text-decoration': 'none' }}>
-                        ← Submit mood
+                    <a
+                        href={date() === today ? '/?edit=1' : '/'}
+                        class="btn-secondary"
+                        style={{ 'text-decoration': 'none' }}
+                    >
+                        {date() === today ? '✏️ Edit my mood' : '← Submit mood'}
                     </a>
                 </div>
             </div>
@@ -125,7 +129,12 @@ export function DisplayPage() {
                                     reactions={entry.reactions ?? []}
                                     onReactionsChange={() => refetch()}
                                     onClick={() => setSelectedEntry(entry)}
-                                    onDelete={
+                                    onEdit={
+                                        currentUserName && entry.name === currentUserName && date() === today
+                                            ? () => { window.location.href = '/?edit=1'; }
+                                            : undefined
+                                    }
+                    onDelete={
                                         currentUserName && entry.name === currentUserName
                                             ? () => handleDelete(entry)
                                             : undefined
