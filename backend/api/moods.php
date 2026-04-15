@@ -25,7 +25,7 @@ function jsonError(int $status, string $message): never
 
 /**
  * Validate that $imageData is either null or a safe base64 data URI.
- * Keeps size under ~2 MB encoded.
+ * Keeps size under ~11 MB encoded.
  */
 function validateImageData(?string $imageData): bool
 {
@@ -36,8 +36,8 @@ function validateImageData(?string $imageData): bool
     if (!preg_match('/^data:image\/(png|jpeg|gif|webp);base64,[A-Za-z0-9+\/=]+$/', $imageData)) {
         return false;
     }
-    // Limit encoded size to 2 MB to prevent DB flooding
-    if (mb_strlen($imageData, '8bit') > 2097152) {
+    // Limit encoded size to 11 MB to allow animated GIFs (8 MB raw ≈ ~10.7 MB base64)
+    if (mb_strlen($imageData, '8bit') > 11534336) {
         return false;
     }
     return true;
@@ -81,10 +81,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 // ── POST: submit a mood entry ────────────────────────────────────────────────
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Enforce a 3 MB request body limit (image is max ~2 MB encoded + JSON overhead)
+    // Enforce a 13 MB request body limit (image is max ~11 MB encoded + JSON overhead)
     $contentLength = (int) ($_SERVER['CONTENT_LENGTH'] ?? 0);
-    if ($contentLength > 3145728) {
-        jsonError(413, 'Request body too large (max 3 MB).');
+    if ($contentLength > 13631488) {
+        jsonError(413, 'Request body too large (max 13 MB).');
     }
 
     $raw  = file_get_contents('php://input');
@@ -128,7 +128,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (!validateImageData($imageData)) {
-        jsonError(400, 'Invalid image_data. Must be a PNG/JPEG/GIF/WebP data URI under 2 MB.');
+        jsonError(400, 'Invalid image_data. Must be a PNG/JPEG/GIF/WebP data URI under 11 MB.');
     }
 
     // ── Persist ───────────────────────────────────────────────────────────

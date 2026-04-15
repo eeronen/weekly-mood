@@ -37,17 +37,25 @@ function resizeImage(
 export function ImageUpload(props: ImageUploadProps) {
   const [preview, setPreview] = createSignal<string | null>(null);
   const [dragOver, setDragOver] = createSignal(false);
+  const [error, setError] = createSignal<string | null>(null);
+
+  const MAX_FILE_SIZE = 8 * 1024 * 1024;
 
   const handleFile = (file: File) => {
+    setError(null);
     if (!file.type.startsWith("image/")) {
+      return;
+    }
+    if (file.size > MAX_FILE_SIZE) {
+      setError("File is too large (max 8 MB). Try a shorter or smaller GIF.");
       return;
     }
     const reader = new FileReader();
     reader.onload = async (e) => {
       const dataUrl = e.target?.result as string;
-      const resized = await resizeImage(dataUrl, 800, 800);
-      setPreview(resized);
-      props.onImageChange(resized);
+      const result = file.type === "image/gif" ? dataUrl : await resizeImage(dataUrl, 800, 800);
+      setPreview(result);
+      props.onImageChange(result);
     };
     reader.readAsDataURL(file);
   };
@@ -81,6 +89,9 @@ export function ImageUpload(props: ImageUploadProps) {
         {(previewUrl) => (
           <img src={previewUrl()} class="upload-preview" alt="Preview" />
         )}
+      </Show>
+      <Show when={error()}>
+        {(msg) => <p class="upload-error">{msg()}</p>}
       </Show>
       <label class="btn-secondary upload-btn">
         {preview() ? "🔄 Change file" : "📂 Choose file"}
