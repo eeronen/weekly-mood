@@ -1,6 +1,7 @@
 import { createSignal, Show } from 'solid-js';
-import { DrawingCanvas } from './DrawingCanvas';
-import { ImageUpload } from './ImageUpload';
+import { DrawingCanvas } from './drawing/DrawingCanvas';
+import { ImageUpload } from './image-upload/ImageUpload';
+import './ImageInput.css';
 
 interface ImageInputProps {
     onDone: (imageData: string | null, imageType: 'drawing' | 'upload' | null) => void;
@@ -61,11 +62,9 @@ export function ImageInput(props: ImageInputProps) {
             <Show when={tab() === 'draw'}>
                 <DrawingCanvas onImageChange={setDrawingData} />
             </Show>
-
             <Show when={tab() === 'upload'}>
                 <ImageUpload onImageChange={setUploadData} />
             </Show>
-
             <Show when={tab() === 'skip'}>
                 <div class="skip-message">
                     <span class="skip-icon">😊</span>

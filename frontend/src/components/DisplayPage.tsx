@@ -2,9 +2,10 @@ import { createResource, createSignal, For, Show } from 'solid-js';
 import { deleteMood, getMoods } from '../api';
 import type { MoodEntry, MoodLevel } from '../types';
 import { MOOD_COLORS, MOOD_EMOJIS, MOOD_LABELS } from '../types';
-import { MoodEntryCard } from './MoodEntryCardBasic';
-import { UserProfileModal } from './UserProfileModal';
+import { MoodEntryCard } from './mood-entry-card/MoodEntryCardBasic';
+import { UserProfileModal } from './user-profile-modal/UserProfileModal';
 import { createPolling } from '../usePolling';
+import './DisplayPage.css';
 
 export function DisplayPage() {
     const today = new Date().toISOString().split('T')[0];
@@ -90,59 +91,60 @@ export function DisplayPage() {
                 </div>
             </Show>
 
-                <Show when={entries().length > 0}>
-                    <div class="display-summary">
-                        <div class="summary-stat">
-                            <span class="stat-number">{entries().length}</span>
-                            <span class="stat-label">Submissions</span>
-                        </div>
-                        <div class="summary-stat">
-                            <span class="stat-number">{avgMood()}</span>
-                            <span class="stat-label">Avg. Mood</span>
-                        </div>
-                        <For each={[1, 2, 3, 4, 5] as MoodLevel[]}>
-                            {(level) => (
-                                <Show when={moodDistribution()[level] > 0}>
-                                    <div
-                                        class="summary-stat"
-                                        style={{ '--mood-color': MOOD_COLORS[level] }}
-                                    >
-                                        <span
-                                            class="stat-number"
-                                            style={{ color: MOOD_COLORS[level] }}
-                                        >
-                                            {MOOD_EMOJIS[level]} {moodDistribution()[level]}
-                                        </span>
-                                        <span class="stat-label">{MOOD_LABELS[level]}</span>
-                                    </div>
-                                </Show>
-                            )}
-                        </For>
+            <Show when={entries().length > 0}>
+                <div class="display-summary">
+                    <div class="summary-stat">
+                        <span class="stat-number">{entries().length}</span>
+                        <span class="stat-label">Submissions</span>
                     </div>
+                    <div class="summary-stat">
+                        <span class="stat-number">{avgMood()}</span>
+                        <span class="stat-label">Avg. Mood</span>
+                    </div>
+                    <For each={[1, 2, 3, 4, 5] as MoodLevel[]}>
+                        {(level) => (
+                            <Show when={moodDistribution()[level] > 0}>
+                                <div
+                                    class="summary-stat"
+                                    style={{ '--mood-color': MOOD_COLORS[level] }}
+                                >
+                                    <span class="stat-number" style={{ color: MOOD_COLORS[level] }}>
+                                        {MOOD_EMOJIS[level]} {moodDistribution()[level]}
+                                    </span>
+                                    <span class="stat-label">{MOOD_LABELS[level]}</span>
+                                </div>
+                            </Show>
+                        )}
+                    </For>
+                </div>
 
-                    <div class="mood-grid-display">
-                        <For each={entries()}>
-                            {(entry: MoodEntry) => (
-                                <MoodEntryCard
-                                    entry={entry}
-                                    reactions={entry.reactions ?? []}
-                                    onReactionsChange={() => refetch()}
-                                    onClick={() => setSelectedEntry(entry)}
-                                    onEdit={
-                                        currentUserName && entry.name === currentUserName && date() === today
-                                            ? () => { window.location.href = '/?edit=1'; }
-                                            : undefined
-                                    }
-                                    onDelete={
-                                        currentUserName && entry.name === currentUserName
-                                            ? () => handleDelete(entry)
-                                            : undefined
-                                    }
-                                />
-                            )}
-                        </For>
-                    </div>
-                </Show>
+                <div class="mood-grid-display">
+                    <For each={entries()}>
+                        {(entry: MoodEntry) => (
+                            <MoodEntryCard
+                                entry={entry}
+                                reactions={entry.reactions ?? []}
+                                onReactionsChange={() => refetch()}
+                                onClick={() => setSelectedEntry(entry)}
+                                onEdit={
+                                    currentUserName &&
+                                    entry.name === currentUserName &&
+                                    date() === today
+                                        ? () => {
+                                              window.location.href = '/?edit=1';
+                                          }
+                                        : undefined
+                                }
+                                onDelete={
+                                    currentUserName && entry.name === currentUserName
+                                        ? () => handleDelete(entry)
+                                        : undefined
+                                }
+                            />
+                        )}
+                    </For>
+                </div>
+            </Show>
 
             <Show when={selectedEntry()}>
                 {(entry) => (

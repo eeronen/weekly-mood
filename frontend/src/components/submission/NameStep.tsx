@@ -1,4 +1,5 @@
 import { createSignal } from 'solid-js';
+import './NameStep.css';
 
 interface NameStepProps {
     currentName: string;

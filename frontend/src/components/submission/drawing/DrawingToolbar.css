@@ -1,0 +1,66 @@
+.drawing-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--color-bg);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+}
+
+.color-palette {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.color-swatch {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2.5px solid transparent;
+  cursor: pointer;
+  transition:
+    transform var(--transition),
+    border-color var(--transition);
+  padding: 0;
+  outline: none;
+}
+
+.color-swatch:hover {
+  transform: scale(1.2);
+}
+
+.color-swatch.active {
+  border-color: var(--color-primary);
+  transform: scale(1.2);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3);
+}
+
+.color-swatch[style*="ffffff"],
+.color-swatch[style*="rgb(255, 255, 255)"] {
+  border-color: var(--color-border);
+}
+
+.brush-size-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  flex: 1;
+  min-width: 120px;
+}
+
+.brush-size-control input[type="range"] {
+  flex: 1;
+  accent-color: var(--color-primary);
+}
+
+@media (max-width: 500px) {
+  .drawing-toolbar {
+    gap: 8px;
+    padding: 10px 12px;
+  }
+}
