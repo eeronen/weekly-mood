@@ -76,7 +76,8 @@ body {
 }
 
 .app-logo {
-  font-size: 1.4rem;
+    width: 2.5rem;
+    height: 2.5rem;
 }
 
 .app-title h1 {

@@ -161,7 +161,7 @@ export function App() {
     <div class="app-container">
       <header class="app-header">
         <a href="/" class="app-title">
-          <span class="app-logo">🎯</span>
+          <img src="/favicon.svg" alt="" class="app-logo" />
           <h1>Sprint Mood</h1>
         </a>
         <div class="header-actions">
