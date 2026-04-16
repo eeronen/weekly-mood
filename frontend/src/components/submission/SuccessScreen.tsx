@@ -32,7 +32,7 @@ export function SuccessScreen(props: SuccessScreenProps) {
                 <button type="button" class="btn-primary" onClick={props.onNext}>
                     ✏️ Edit my entry
                 </button>
-                <a href="/display" class="btn-secondary" style={{ 'text-decoration': 'none' }}>
+                <a href="/" class="btn-secondary" style={{ 'text-decoration': 'none' }}>
                     View all moods →
                 </a>
             </div>

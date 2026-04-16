@@ -1,6 +1,6 @@
 import { Show } from 'solid-js';
 import type { Step } from '../useSubmissionFlow';
-import '../App.css';
+import '../SubmitPage.css';
 
 interface AppHeaderProps {
     name: string;
@@ -13,7 +13,7 @@ interface AppHeaderProps {
 export function AppHeader(props: AppHeaderProps) {
     return (
         <header class="app-header">
-            <a href="/" class="app-title">
+            <a href="/submit" class="app-title">
                 <img src="/favicon.svg" alt="" class="app-logo" />
                 <h1>Sprint Mood</h1>
             </a>
@@ -32,7 +32,7 @@ export function AppHeader(props: AppHeaderProps) {
                         ✏️ Edit mood
                     </button>
                 </Show>
-                <a href="/display" class="btn-link display-link">
+                <a href="/" class="btn-link display-link">
                     View All →
                 </a>
                 <a

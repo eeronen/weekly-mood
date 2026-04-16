@@ -33,7 +33,7 @@ export function AlreadySubmitted(props: AlreadySubmittedProps) {
                 <button type="button" class="btn-primary" onClick={props.onEdit}>
                     ✏️ Edit entry
                 </button>
-                <a href="/display" class="btn-secondary" style={{ 'text-decoration': 'none' }}>
+                <a href="/" class="btn-secondary" style={{ 'text-decoration': 'none' }}>
                     View all moods →
                 </a>
             </div>
