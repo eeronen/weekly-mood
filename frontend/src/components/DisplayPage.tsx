@@ -23,7 +23,7 @@ export function DisplayPage() {
         return changed;
     });
 
-    const entries = () => moods()?.data ?? [];
+    const entries = () => moods.latest?.data ?? moods()?.data ?? [];
 
     const avgMood = () => {
         const data = entries();
@@ -75,7 +75,7 @@ export function DisplayPage() {
                 </div>
             </div>
 
-            <Show when={moods.loading}>
+            <Show when={entries().length === 0 && moods.loading}>
                 <div class="loading">Loading moods…</div>
             </Show>
 
@@ -83,13 +83,12 @@ export function DisplayPage() {
                 <div class="error-banner">Failed to load moods. Is the backend running?</div>
             </Show>
 
-            <Show when={!moods.loading}>
-                <Show when={entries().length === 0 && !moods.error}>
-                    <div class="empty-state">
-                        <span class="empty-icon">🤷</span>
-                        <p>No moods submitted for this date yet.</p>
-                    </div>
-                </Show>
+            <Show when={entries().length === 0 && !moods.loading && !moods.error}>
+                <div class="empty-state">
+                    <span class="empty-icon">🤷</span>
+                    <p>No moods submitted for this date yet.</p>
+                </div>
+            </Show>
 
                 <Show when={entries().length > 0}>
                     <div class="display-summary">
@@ -134,7 +133,7 @@ export function DisplayPage() {
                                             ? () => { window.location.href = '/?edit=1'; }
                                             : undefined
                                     }
-                    onDelete={
+                                    onDelete={
                                         currentUserName && entry.name === currentUserName
                                             ? () => handleDelete(entry)
                                             : undefined
@@ -144,7 +143,6 @@ export function DisplayPage() {
                         </For>
                     </div>
                 </Show>
-            </Show>
 
             <Show when={selectedEntry()}>
                 {(entry) => (

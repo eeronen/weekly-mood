@@ -287,7 +287,7 @@ export function App() {
                     name={name()}
                     mood={currentMood()}
                     imageData={imageData()}
-                    onNext={handleRestart}
+                    onNext={handleEditStart}
                   />
                 )}
               </Show>
