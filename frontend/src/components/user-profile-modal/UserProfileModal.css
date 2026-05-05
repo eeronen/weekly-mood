@@ -177,12 +177,20 @@
 }
 
 @media (max-width: 500px) {
+  .modal-overlay {
+    padding: 12px;
+  }
+
   .modal-content {
-    padding: 24px 18px;
-    max-height: 90vh;
+    padding: 24px 16px;
+    max-height: 92vh;
   }
 
   .modal-stats {
     gap: 10px;
+  }
+
+  .modal-image {
+    max-height: 260px;
   }
 }

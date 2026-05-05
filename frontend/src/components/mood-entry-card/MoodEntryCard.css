@@ -47,6 +47,13 @@
   opacity: 1;
 }
 
+/* Always show delete on touch devices where hover doesn't work */
+@media (hover: none) {
+  .btn-delete-card {
+    opacity: 1;
+  }
+}
+
 .btn-delete-card:hover {
   background: #fee2e2;
 }

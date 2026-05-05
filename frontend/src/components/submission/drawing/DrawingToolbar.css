@@ -58,6 +58,11 @@
   accent-color: var(--color-primary);
 }
 
+.undo-redo-controls {
+  display: flex;
+  gap: 6px;
+}
+
 @media (max-width: 500px) {
   .drawing-toolbar {
     gap: 8px;
