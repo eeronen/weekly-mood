@@ -72,6 +72,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         exit;
     }
 
+    // If 'dates' param is requested, return distinct dates that have entries
+    if (isset($_GET['dates'])) {
+        try {
+            $db   = getDB();
+            $stmt = $db->prepare(
+                'SELECT DISTINCT DATE(created_at) AS date
+                   FROM moods
+                  WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 365 DAY)
+                  ORDER BY date DESC
+                  LIMIT 100'
+            );
+            $stmt->execute();
+            $dates = array_column($stmt->fetchAll(PDO::FETCH_ASSOC), 'date');
+            echo json_encode(['success' => true, 'data' => $dates], JSON_UNESCAPED_UNICODE);
+        } catch (PDOException $e) {
+            error_log('[weekly-mood] DB error on GET dates: ' . $e->getMessage());
+            jsonError(500, 'Database error. Please try again later.');
+        }
+        exit;
+    }
+
     $date = $_GET['date'] ?? date('Y-m-d');
 
     // Strict date format check

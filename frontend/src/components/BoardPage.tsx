@@ -1,9 +1,10 @@
 import { createResource, createSignal, For, Show } from "solid-js";
-import { deleteMood, getMoods } from "../api";
+import { deleteMood, getMoodDates, getMoods } from "../api";
 import type { MoodEntry, MoodLevel } from "../types";
 import { MOOD_COLORS, MOOD_EMOJIS, MOOD_LABELS } from "../types";
 import { MoodEntryCard } from "./mood-entry-card/MoodEntryCardBasic";
 import { UserProfileModal } from "./user-profile-modal/UserProfileModal";
+import { DatePicker } from "./date-picker/DatePicker";
 import { createPolling } from "../usePolling";
 import "./BoardPage.css";
 
@@ -11,6 +12,21 @@ export function BoardPage() {
   const today = new Date().toISOString().split("T")[0];
   const [date, setDate] = createSignal(today);
   const [moods, { refetch }] = createResource(date, getMoods);
+  const [datesResource] = createResource(getMoodDates);
+  const datesWithEntries = () => datesResource()?.data ?? [];
+
+  const prevDate = () => {
+    const d = date();
+    return datesWithEntries().find((dt) => dt < d) ?? null;
+  };
+  const nextDate = () => {
+    const d = date();
+    if (d >= today) return null;
+    const newer = datesWithEntries().filter((dt) => dt > d && dt <= today);
+    // If there's an entry date between here and today, go to the nearest one;
+    // otherwise jump straight to today.
+    return newer.length > 0 ? newer[newer.length - 1] : today;
+  };
   const currentUserName = localStorage.getItem("sprintMoodName") ?? "";
   const hasSubmittedToday = () =>
     date() === today && entries().some((e) => e.name === currentUserName);
@@ -60,13 +76,38 @@ export function BoardPage() {
           <img src="/favicon.svg" alt="" class="app-logo" /> Sprint Review Moods
         </h1>
         <div class="display-controls">
-          <input
-            type="date"
-            class="date-input"
-            value={date()}
-            onInput={(e) => setDate(e.currentTarget.value)}
-            max={today}
-          />
+          <div class="date-nav">
+            <button
+              type="button"
+              class="btn-nav"
+              disabled={!prevDate()}
+              onClick={() => {
+                const d = prevDate();
+                if (d) setDate(d);
+              }}
+              title="Previous date with entries"
+            >
+              ◀
+            </button>
+            <DatePicker
+              value={date()}
+              onChange={setDate}
+              highlightedDates={datesWithEntries()}
+              max={today}
+            />
+            <button
+              type="button"
+              class="btn-nav"
+              disabled={!nextDate()}
+              onClick={() => {
+                const d = nextDate();
+                if (d) setDate(d);
+              }}
+              title="Next date with entries"
+            >
+              ▶
+            </button>
+          </div>
           <button type="button" class="btn-secondary" onClick={() => refetch()}>
             🔄 Refresh
           </button>

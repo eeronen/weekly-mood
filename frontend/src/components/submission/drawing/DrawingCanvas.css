@@ -11,8 +11,18 @@
   overflow: hidden;
   border: 2px solid var(--color-border);
   background: #fff;
-  cursor: crosshair;
+  cursor: none;
   box-shadow: var(--shadow-sm);
+  position: relative;
+}
+
+.drawing-cursor-dot {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  opacity: 0.85;
+  mix-blend-mode: multiply;
 }
 
 .drawing-canvas {

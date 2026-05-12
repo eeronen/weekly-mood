@@ -121,6 +121,11 @@ export function DrawingCanvas(props: DrawingCanvasProps) {
   let canvasRef!: HTMLCanvasElement;
   let containerRef!: HTMLDivElement;
 
+  const [cursorPos, setCursorPos] = createSignal<{
+    x: number;
+    y: number;
+  } | null>(null);
+
   const {
     color,
     setColor,
@@ -151,10 +156,13 @@ export function DrawingCanvas(props: DrawingCanvasProps) {
       startDrawing(pos.x, pos.y);
     };
     const onMouseMove = (e: MouseEvent) => {
+      const rect = canvasRef.getBoundingClientRect();
+      setCursorPos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
       const pos = getCanvasPos(canvasRef, e.clientX, e.clientY);
       draw(pos.x, pos.y);
     };
     const onMouseUp = () => stopDrawing();
+    const onMouseLeave = () => setCursorPos(null);
 
     const onTouchStart = (e: TouchEvent) => {
       e.preventDefault();
@@ -174,6 +182,7 @@ export function DrawingCanvas(props: DrawingCanvasProps) {
     canvasRef.addEventListener("mousemove", onMouseMove);
     canvasRef.addEventListener("mouseup", onMouseUp);
     canvasRef.addEventListener("mouseleave", onMouseUp);
+    canvasRef.addEventListener("mouseleave", onMouseLeave);
     canvasRef.addEventListener("touchstart", onTouchStart, { passive: false });
     canvasRef.addEventListener("touchmove", onTouchMove, { passive: false });
     canvasRef.addEventListener("touchend", onTouchEnd);
@@ -197,6 +206,7 @@ export function DrawingCanvas(props: DrawingCanvasProps) {
       canvasRef.removeEventListener("mousemove", onMouseMove);
       canvasRef.removeEventListener("mouseup", onMouseUp);
       canvasRef.removeEventListener("mouseleave", onMouseUp);
+      canvasRef.removeEventListener("mouseleave", onMouseLeave);
       canvasRef.removeEventListener("touchstart", onTouchStart);
       canvasRef.removeEventListener("touchmove", onTouchMove);
       canvasRef.removeEventListener("touchend", onTouchEnd);
@@ -219,6 +229,18 @@ export function DrawingCanvas(props: DrawingCanvasProps) {
       />
       <div ref={containerRef} class="canvas-container">
         <canvas ref={canvasRef} class="drawing-canvas" />
+        {cursorPos() && (
+          <div
+            class="drawing-cursor-dot"
+            style={{
+              left: `${cursorPos()!.x}px`,
+              top: `${cursorPos()!.y}px`,
+              width: `${brushSize() * (canvasRef.getBoundingClientRect().width / canvasRef.width)}px`,
+              height: `${brushSize() * (canvasRef.getBoundingClientRect().width / canvasRef.width)}px`,
+              background: color(),
+            }}
+          />
+        )}
       </div>
     </div>
   );
