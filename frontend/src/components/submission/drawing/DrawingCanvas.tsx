@@ -157,12 +157,20 @@ export function DrawingCanvas(props: DrawingCanvasProps) {
     };
     const onMouseMove = (e: MouseEvent) => {
       const rect = canvasRef.getBoundingClientRect();
-      setCursorPos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+      const insideCanvas =
+        e.clientX >= rect.left &&
+        e.clientX <= rect.right &&
+        e.clientY >= rect.top &&
+        e.clientY <= rect.bottom;
+      setCursorPos(
+        insideCanvas
+          ? { x: e.clientX - rect.left, y: e.clientY - rect.top }
+          : null,
+      );
       const pos = getCanvasPos(canvasRef, e.clientX, e.clientY);
       draw(pos.x, pos.y);
     };
     const onMouseUp = () => stopDrawing();
-    const onMouseLeave = () => setCursorPos(null);
 
     const onTouchStart = (e: TouchEvent) => {
       e.preventDefault();
@@ -179,10 +187,8 @@ export function DrawingCanvas(props: DrawingCanvasProps) {
     const onTouchEnd = () => stopDrawing();
 
     canvasRef.addEventListener("mousedown", onMouseDown);
-    canvasRef.addEventListener("mousemove", onMouseMove);
-    canvasRef.addEventListener("mouseup", onMouseUp);
-    canvasRef.addEventListener("mouseleave", onMouseUp);
-    canvasRef.addEventListener("mouseleave", onMouseLeave);
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
     canvasRef.addEventListener("touchstart", onTouchStart, { passive: false });
     canvasRef.addEventListener("touchmove", onTouchMove, { passive: false });
     canvasRef.addEventListener("touchend", onTouchEnd);
@@ -203,10 +209,8 @@ export function DrawingCanvas(props: DrawingCanvasProps) {
 
     onCleanup(() => {
       canvasRef.removeEventListener("mousedown", onMouseDown);
-      canvasRef.removeEventListener("mousemove", onMouseMove);
-      canvasRef.removeEventListener("mouseup", onMouseUp);
-      canvasRef.removeEventListener("mouseleave", onMouseUp);
-      canvasRef.removeEventListener("mouseleave", onMouseLeave);
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
       canvasRef.removeEventListener("touchstart", onTouchStart);
       canvasRef.removeEventListener("touchmove", onTouchMove);
       canvasRef.removeEventListener("touchend", onTouchEnd);
