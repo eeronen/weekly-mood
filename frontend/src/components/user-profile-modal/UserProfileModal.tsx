@@ -47,8 +47,10 @@ export function UserProfileModal(props: UserProfileModalProps) {
             >
               {MOOD_LABELS[level()]}
             </span>
-            <Show when={avgMood() !== null}>
-              <span class="modal-avg-mood">Avg. mood: {avgMood()}</span>
+            <Show when={avgMood()}>
+              {(avg) => (
+                <span class="modal-avg-mood">Avg. previous mood: {avg()}</span>
+              )}
             </Show>
           </div>
         </div>
