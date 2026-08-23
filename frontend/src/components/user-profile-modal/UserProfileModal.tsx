@@ -16,8 +16,14 @@ export function UserProfileModal(props: UserProfileModalProps) {
     (name) => getMoodsByUser(name),
   );
 
-  const entries = () => history()?.data ?? [];
+  const entries = () =>
+    (history()?.data ?? []).filter((e) => e.id !== props.entry.id);
   const level = () => props.entry.mood as MoodLevel;
+  const avgMood = () => {
+    const data = entries();
+    if (data.length === 0) return null;
+    return (data.reduce((sum, m) => sum + m.mood, 0) / data.length).toFixed(1);
+  };
 
   return (
     <div
@@ -41,6 +47,11 @@ export function UserProfileModal(props: UserProfileModalProps) {
             >
               {MOOD_LABELS[level()]}
             </span>
+            <Show when={avgMood()}>
+              {(avg) => (
+                <span class="modal-avg-mood">Avg. previous mood: {avg()}</span>
+              )}
+            </Show>
           </div>
         </div>
 
