@@ -76,8 +76,18 @@
   font-weight: 600;
 }
 
+.modal-avg-mood {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  font-weight: 500;
+  margin-top: 2px;
+}
+
 .modal-image {
   width: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
   max-height: 400px;
   object-fit: contain;
   border-radius: var(--radius-md);
@@ -115,8 +125,7 @@
 }
 
 .modal-history-wrapper {
-  flex: 1;
-  min-height: 0;
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -138,19 +147,22 @@
 
 .modal-history-list {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 8px;
-  overflow-y: auto;
+  overflow-x: auto;
+  padding-bottom: 6px;
 }
 
 .modal-history-item {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
   padding: 10px 14px;
+  flex-shrink: 0;
   background: var(--color-bg);
   border-radius: var(--radius-sm);
-  border-left: 3px solid var(--mood-color);
+  border-top: 3px solid var(--mood-color);
 }
 
 .modal-history-emoji {
@@ -166,12 +178,11 @@
 .modal-history-date {
   font-size: 0.8rem;
   color: var(--color-text-muted);
-  margin-left: auto;
 }
 
 .modal-history-thumb {
-  width: 36px;
-  height: 36px;
+  width: 48px;
+  height: 48px;
   object-fit: cover;
   border-radius: 4px;
 }
