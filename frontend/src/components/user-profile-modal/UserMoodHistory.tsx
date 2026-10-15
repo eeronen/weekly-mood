@@ -1,4 +1,4 @@
-import { For } from "solid-js";
+import { For, onMount } from "solid-js";
 import type { MoodEntry, MoodLevel } from "../../types";
 import { MOOD_COLORS, MOOD_EMOJIS, MOOD_LABELS } from "../../types";
 
@@ -7,12 +7,18 @@ interface UserMoodHistoryProps {
 }
 
 export function UserMoodHistory(props: UserMoodHistoryProps) {
+  let historyList!: HTMLDivElement;
+
+  onMount(() => {
+    historyList.scrollLeft = historyList.scrollWidth;
+  });
+
   return (
     <>
       <div class="modal-history">
         <h3>Previous moods</h3>
-        <div class="modal-history-list">
-          <For each={props.entries}>
+        <div class="modal-history-list" ref={historyList}>
+          <For each={[...props.entries].reverse()}>
             {(entry) => {
               const lvl = entry.mood as MoodLevel;
               const date = entry.created_at
